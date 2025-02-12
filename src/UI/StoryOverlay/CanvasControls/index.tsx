@@ -1,6 +1,11 @@
 import Immut from "@rbxts/immut";
 import { useEventListener } from "@rbxts/pretty-react-hooks";
-import React, { useBinding, useCallback, useEffect, useState } from "@rbxts/react";
+import React, {
+	useBinding,
+	useCallback,
+	useEffect,
+	useState
+} from "@rbxts/react";
 import { useProducer } from "@rbxts/react-reflex";
 import { RunService } from "@rbxts/services";
 import { useInputBegan, useInputEnded } from "Hooks/Context/UserInput";
@@ -29,11 +34,11 @@ function CanvasControls(props: CanvasControlsProps) {
 			if (input.UserInputType === Enum.UserInputType.MouseMovement) {
 				setMousePos(new Vector2(input.Position.X, input.Position.Y));
 			} else if (input.UserInputType === Enum.UserInputType.MouseWheel) {
-				if (!shiftClicked) return;
+				if (!ctrlClicked) return;
 				addZoom(props.PreviewEntry.Key, input.Position.Z * 5);
 			}
 		},
-		[shiftClicked],
+		[ctrlClicked]
 	);
 	const OnInputBegan = useCallback((_: Frame, input: InputObject) => {
 		if (input.UserInputType === Enum.UserInputType.MouseButton3) {
@@ -81,7 +86,7 @@ function CanvasControls(props: CanvasControlsProps) {
 			updateMountData(props.PreviewEntry.Key, (old) =>
 				Immut.produce(old, (draft) => {
 					draft.Offset = old.Offset.add(delta);
-				}),
+				})
 			);
 		});
 
@@ -94,7 +99,7 @@ function CanvasControls(props: CanvasControlsProps) {
 				InputBegan: OnInputBegan,
 				InputChanged: OnInputChanged,
 				MouseEnter: insideApi.enable,
-				MouseLeave: insideApi.disable,
+				MouseLeave: insideApi.disable
 			}}
 		></Div>
 	);
