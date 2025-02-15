@@ -47,7 +47,14 @@ function CanvasControls(props: CanvasControlsProps) {
 						cursorRelativeToDivCenter
 					);
 				} else {
-					zoomByMultiplier(props.PreviewEntry.Key, input.Position.Z * 1.3);
+					// zoomByMultiplier(props.PreviewEntry.Key, input.Position.Z * 1.3);
+					updateMountData(props.PreviewEntry.Key, (old) =>
+						Immut.produce(old, (draft) => {
+							draft.Offset = old.Offset.add(
+								new Vector2(0, input.Position.Z * 120)
+							);
+						})
+					);
 				}
 			}
 		},
