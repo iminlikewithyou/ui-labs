@@ -34,20 +34,22 @@ function CanvasControls(props: CanvasControlsProps) {
 			if (input.UserInputType === Enum.UserInputType.MouseMovement) {
 				setMousePos(new Vector2(input.Position.X, input.Position.Y));
 			} else if (input.UserInputType === Enum.UserInputType.MouseWheel) {
-				const holder = props.PreviewEntry.Holder;
-				if (ctrlClicked && holder) {
-					const divCenterPos = holder.AbsolutePosition.add(
-						holder.AbsoluteSize.div(2)
-					);
-					const currentPos = mousePos.getValue();
-					const cursorRelativeToDivCenter = currentPos.sub(divCenterPos);
+				if (ctrlClicked) {
+					const holder = props.PreviewEntry.Holder;
+					let cursorRelativeToDivCenter: Vector2 | undefined;
+					if (holder) {
+						const divCenterPos = holder.AbsolutePosition.add(
+							holder.AbsoluteSize.div(2)
+						);
+						const currentPos = mousePos.getValue();
+						cursorRelativeToDivCenter = currentPos.sub(divCenterPos);
+					}
 					zoomByMultiplier(
 						props.PreviewEntry.Key,
 						input.Position.Z * 1.3,
 						cursorRelativeToDivCenter
 					);
 				} else {
-					// zoomByMultiplier(props.PreviewEntry.Key, input.Position.Z * 1.3);
 					updateMountData(props.PreviewEntry.Key, (old) =>
 						Immut.produce(old, (draft) => {
 							draft.Offset = old.Offset.add(
