@@ -53,14 +53,16 @@ function CanvasControls(props: CanvasControlsProps) {
 					updateMountData(props.PreviewEntry.Key, (old) =>
 						Immut.produce(old, (draft) => {
 							draft.Offset = old.Offset.add(
-								new Vector2(0, input.Position.Z * 120)
+								shiftClicked
+									? new Vector2(input.Position.Z * 120, 0)
+									: new Vector2(0, input.Position.Z * 120)
 							);
 						})
 					);
 				}
 			}
 		},
-		[ctrlClicked]
+		[ctrlClicked, shiftClicked]
 	);
 	const OnInputBegan = useCallback((_: Frame, input: InputObject) => {
 		if (input.UserInputType === Enum.UserInputType.MouseButton3) {
