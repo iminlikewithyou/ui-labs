@@ -34,15 +34,18 @@ function CanvasControls(props: CanvasControlsProps) {
 			if (input.UserInputType === Enum.UserInputType.MouseMovement) {
 				setMousePos(new Vector2(input.Position.X, input.Position.Y));
 			} else if (input.UserInputType === Enum.UserInputType.MouseWheel) {
-				if (ctrlClicked) {
-					const holder = props.PreviewEntry.Holder;
+				if (ctrlClicked || shiftClicked) {
 					let cursorRelativeToDivCenter: Vector2 | undefined;
-					if (holder) {
-						const divCenterPos = holder.AbsolutePosition.add(
-							holder.AbsoluteSize.div(2)
-						);
-						const currentPos = mousePos.getValue();
-						cursorRelativeToDivCenter = currentPos.sub(divCenterPos);
+					// Ctrl-Zoom pans towards the cursor
+					if (ctrlClicked) {
+						const holder = props.PreviewEntry.Holder;
+						if (holder) {
+							const divCenterPos = holder.AbsolutePosition.add(
+								holder.AbsoluteSize.div(2)
+							);
+							const currentPos = mousePos.getValue();
+							cursorRelativeToDivCenter = currentPos.sub(divCenterPos);
+						}
 					}
 					zoomByMultiplier(
 						props.PreviewEntry.Key,
@@ -64,7 +67,7 @@ function CanvasControls(props: CanvasControlsProps) {
 				}
 			}
 		},
-		[ctrlClicked]
+		[ctrlClicked, shiftClicked]
 	);
 	const OnInputBegan = useCallback((_: Frame, input: InputObject) => {
 		if (input.UserInputType === Enum.UserInputType.MouseButton3) {
