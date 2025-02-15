@@ -4,6 +4,7 @@ import LightBackground from "./Buttons.tsx/LightBackground";
 import MeasureTool from "./Buttons.tsx/MeasureTool";
 import MouseRules from "./Buttons.tsx/MouseRules";
 import Reload from "./Buttons.tsx/Reload";
+import ResetView from "./Buttons.tsx/ResetView";
 import ResetZoom from "./Buttons.tsx/ResetZoom";
 import SelectElements from "./Buttons.tsx/SelectElements";
 import ShowOutlines from "./Buttons.tsx/ShowOutlines";
@@ -33,6 +34,7 @@ export const ToolButtonsList = [
 	{ Name: "ZoomIn", Render: ZoomIn, DisplayName: "Zoom In" },
 	{ Name: "ZoomOut", Render: ZoomOut, DisplayName: "Zoom Out" },
 	{ Name: "ResetZoom", Render: ResetZoom, DisplayName: "Reset Zoom" },
+	{ Name: "ResetView", Render: ResetView, DisplayName: "Reset View" },
 	{ Name: "ViewOnViewport", Render: Viewport, DisplayName: "View On Viewport" },
 	{ Name: "ViewOnExplorer", Render: Explorer, DisplayName: "View On Explorer" },
 	{ Name: "FullscreenMode", Render: FullscreenMode, DisplayName: "Fullscreen Mode" },
