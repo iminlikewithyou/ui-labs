@@ -50,19 +50,21 @@ function CanvasControls(props: CanvasControlsProps) {
 						cursorRelativeToDivCenter
 					);
 				} else {
-					updateMountData(props.PreviewEntry.Key, (old) =>
-						Immut.produce(old, (draft) => {
-							draft.Offset = old.Offset.add(
-								shiftClicked
-									? new Vector2(input.Position.Z * 120, 0)
-									: new Vector2(0, input.Position.Z * 120)
-							);
-						})
-					);
+					// Panning with scroll feels more of a hassle than useful for a storybook explorer, so I commented it out.
+					// Maybe it can be an option in the future. I also forgot that actual scrolling elements exist
+					// updateMountData(props.PreviewEntry.Key, (old) =>
+					// 	Immut.produce(old, (draft) => {
+					// 		draft.Offset = old.Offset.add(
+					// 			shiftClicked
+					// 				? new Vector2(input.Position.Z * 120, 0)
+					// 				: new Vector2(0, input.Position.Z * 120)
+					// 		);
+					// 	})
+					// );
 				}
 			}
 		},
-		[ctrlClicked, shiftClicked]
+		[ctrlClicked]
 	);
 	const OnInputBegan = useCallback((_: Frame, input: InputObject) => {
 		if (input.UserInputType === Enum.UserInputType.MouseButton3) {
