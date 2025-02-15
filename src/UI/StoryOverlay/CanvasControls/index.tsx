@@ -51,7 +51,7 @@ function CanvasControls(props: CanvasControlsProps) {
 					);
 				} else {
 					// Panning with scroll feels more of a hassle than useful for a storybook explorer, so I commented it out.
-					// Maybe it can be an option in the future.
+					// Maybe it can be an option in the future. I also forgot that actual scrolling elements exist
 					// updateMountData(props.PreviewEntry.Key, (old) =>
 					// 	Immut.produce(old, (draft) => {
 					// 		draft.Offset = old.Offset.add(
