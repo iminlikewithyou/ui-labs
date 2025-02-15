@@ -34,7 +34,8 @@ function Editor(props: StoryHolderProps) {
 	return (
 		<Div
 			key={storyName}
-			Position={UDim2.fromOffset(offset.X, offset.Y)}
+			AnchorPoint={new Vector2(0.5, 0.5)}
+			Position={new UDim2(0.5, offset.X, 0.5, offset.Y)}
 			ZIndex={props.PreviewEntry.Order}
 		>
 			<uiscale Scale={scale / 100} />
