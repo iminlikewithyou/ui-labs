@@ -41,14 +41,14 @@ function Branding(props: BrandingProps) {
 					TextSize={18}
 					AutomaticSize={Enum.AutomaticSize.X}
 				/>
-				<Text
+				{/* <Text
 					key={"Version"}
 					TextColor3={theme.Text.Disabled}
 					Text={`v${Configs.Version.Mayor}.${Configs.Version.Minor}.${Configs.Version.Fix}`}
 					Weight="Light"
 					TextSize={10}
 					AutomaticSize={Enum.AutomaticSize.X}
-				/>
+				/> */}
 			</Div>
 			<Div key={"Options"} Position={UDim2.fromScale(1, 0.5)} Size={UDim2.fromOffset(20, 20)} AnchorPoint={new Vector2(1, 0.5)}>
 				<Div ZIndex={-1}>
