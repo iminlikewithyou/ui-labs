@@ -25,7 +25,7 @@ if (!RunService.IsRunning() || RunService.IsEdit()) {
 		new DockWidgetPluginGuiInfo(Enum.InitialDockState.Float, false, false, 0, 0),
 	);
 
-	dockWidget.Title = "UI Labs - Storybook";
+	dockWidget.Title = "Stories";
 	dockWidget.Name = isLocal ? "UILabs(DEV)" : "UILabs";
 	dockWidget.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 	let isOpen = false;
