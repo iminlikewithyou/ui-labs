@@ -151,6 +151,32 @@ function FromOrderedEntryMap(list: PreviewEntry[]) {
 	return entryMap;
 }
 
+/** The scale of each step when zooming in and out with keyboard keys. */
+const ZOOM_STEP_SCALE = 1.5;
+/** The minimum zoom value. */
+const MIN_ZOOM = 5.8527663466; // 7 steps out
+/** The maximum zoom value. */
+const MAX_ZOOM = 12974.6337890625; // 12 steps in
+const EPSILON = 1e-10; // Tolerance for floating point precision
+/**
+ * Calculates the next zoom value according to the zoom and step.
+ * A negative step zooms out, a positive step zooms in.
+ * For example, when the ZOOM_STEP_SCALE is set to 2, and stepping by 1:
+ * - A zoom of 100-199% will zoom to 200%.
+ * - A zoom of 200-399% will zoom to 400%.
+ */
+function calculateNextZoomByStep(zoom: number, step: number) {
+	const zoomScalar = zoom / 100;
+	const logBase = math.log(zoomScalar, ZOOM_STEP_SCALE);
+	const adjustedLogBase = logBase + EPSILON;
+	const floorLog = math.floor(adjustedLogBase);
+	const nextExponent = floorLog + step;
+	const nextZoomScalar = math.pow(ZOOM_STEP_SCALE, nextExponent);
+	const nextZoom = nextZoomScalar * 100;
+
+	return math.clamp(nextZoom, MIN_ZOOM, MAX_ZOOM);
+}
+
 function FilterEntryMap(
 	entryMap: Map<string, PreviewEntry>,
 	predicator: (entry: PreviewEntry, uid: string) => boolean
@@ -292,12 +318,17 @@ export const StoryPreviewProducer = createProducer(initialState, {
 			draft.mountPreviews.set(current.Key, updatedData);
 		});
 	},
-	addZoom: (state, key: string, zoomDelta: number) => {
+	/**
+	 * Zooms by stepping in and out.
+	 * A negative step zooms in, a positive step zooms out.
+	 */
+	zoomByStep: (state, key: string, step: number) => {
 		const current = GetEntryByKey(state.mountPreviews, key);
 		if (!current) return state;
 
-		const newZoom = current.Zoom + zoomDelta;
-		if (newZoom < 5) return state;
+		const newZoom = calculateNextZoomByStep(current.Zoom, step);
+
+		if (newZoom === current.Zoom) return state;
 		return Immut.produce(state, (draft) => {
 			draft.mountPreviews.set(key, {
 				...current,
@@ -305,11 +336,49 @@ export const StoryPreviewProducer = createProducer(initialState, {
 			});
 		});
 	},
+	/**
+	 * Zooms by applying a multiplier.
+	 * A positive multiplier zooms in by that multiplier. (2 applies a 2x zoom)
+	 * A negative multiplier zooms out by the multiplicative inverse of that multiplier. (-2 applies a 0.5x zoom)
+	 * Optionally, providing an offset of the cursor relative to the center of the frame will ensure that the content at that location stay in place.
+	 */
+	zoomByMultiplier: (
+		state,
+		key: string,
+		multiplier: number,
+		cursorOffset?: Vector2 | undefined
+	) => {
+		const current = GetEntryByKey(state.mountPreviews, key);
+		if (!current) return state;
+
+		if (multiplier < 0) multiplier = 1 / -multiplier;
+		const newZoom = math.clamp(current.Zoom * multiplier, MIN_ZOOM, MAX_ZOOM);
+
+		if (newZoom === current.Zoom) return state;
+
+		let newOffset: Vector2;
+		if (cursorOffset) {
+			const scalingFactor = newZoom / current.Zoom;
+			const offsetAdjustment = cursorOffset.mul(1 - scalingFactor);
+			newOffset = current.Offset.add(offsetAdjustment);
+		} else {
+			newOffset = current.Offset;
+		}
+
+		return Immut.produce(state, (draft) => {
+			draft.mountPreviews.set(key, {
+				...current,
+				Zoom: newZoom,
+				Offset: newOffset
+			});
+		});
+	},
 	setZoom: (state, key: string, zoom: number) => {
 		const current = GetEntryByKey(state.mountPreviews, key);
 		if (!current) return state;
 
-		if (zoom < 5) return state;
+		const newZoom = math.clamp(zoom, MIN_ZOOM, MAX_ZOOM);
+		if (newZoom === current.Zoom) return state;
 		return Immut.produce(state, (draft) => {
 			draft.mountPreviews.set(key, {
 				...current,
@@ -317,7 +386,6 @@ export const StoryPreviewProducer = createProducer(initialState, {
 			});
 		});
 	},
-
 	setActionComponents: (
 		state,
 		key: string,

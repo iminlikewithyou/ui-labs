@@ -27,15 +27,28 @@ function CanvasControls(props: CanvasControlsProps) {
 
 	const inputEnded = useInputEnded();
 	const inputBegan = useInputBegan();
-	const { updateMountData, addZoom } = useProducer<RootProducer>();
+	const { updateMountData, zoomByMultiplier } = useProducer<RootProducer>();
 
 	const OnInputChanged = useCallback(
 		(_: Frame, input: InputObject) => {
 			if (input.UserInputType === Enum.UserInputType.MouseMovement) {
 				setMousePos(new Vector2(input.Position.X, input.Position.Y));
 			} else if (input.UserInputType === Enum.UserInputType.MouseWheel) {
-				if (!ctrlClicked) return;
-				addZoom(props.PreviewEntry.Key, input.Position.Z * 5);
+				const holder = props.PreviewEntry.Holder;
+				if (ctrlClicked && holder) {
+					const divCenterPos = holder.AbsolutePosition.add(
+						holder.AbsoluteSize.div(2)
+					);
+					const currentPos = mousePos.getValue();
+					const cursorRelativeToDivCenter = currentPos.sub(divCenterPos);
+					zoomByMultiplier(
+						props.PreviewEntry.Key,
+						input.Position.Z * 1.3,
+						cursorRelativeToDivCenter
+					);
+				} else {
+					zoomByMultiplier(props.PreviewEntry.Key, input.Position.Z * 1.3);
+				}
 			}
 		},
 		[ctrlClicked]

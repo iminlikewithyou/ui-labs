@@ -4,12 +4,12 @@ import SpriteButton from "UI/Utils/SpriteButton";
 import { ToolButtonProps } from "../ToolButtonsList";
 
 function ZoomIn(props: ToolButtonProps) {
-	const { addZoom } = useProducer<RootProducer>();
+	const { zoomByStep } = useProducer<RootProducer>();
 
 	const entry = props.PreviewEntry;
 
 	const OnZoomIn = useCallback(() => {
-		addZoom(props.PreviewEntry.Key, 10);
+		zoomByStep(entry.Key, 1);
 	}, [entry]);
 
 	return (
