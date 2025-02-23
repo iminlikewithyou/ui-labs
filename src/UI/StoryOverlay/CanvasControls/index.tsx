@@ -40,11 +40,11 @@ function CanvasControls(props: CanvasControlsProps) {
 					if (ctrlClicked) {
 						const holder = props.PreviewEntry.Holder;
 						if (holder) {
-							const divCenterPos = holder.AbsolutePosition.add(
-								holder.AbsoluteSize.div(2)
+							const divAnchorPos = holder.AbsolutePosition.add(
+								holder.AbsoluteSize.mul(holder.AnchorPoint)
 							);
 							const currentPos = mousePos.getValue();
-							cursorRelativeToDivCenter = currentPos.sub(divCenterPos);
+							cursorRelativeToDivCenter = currentPos.sub(divAnchorPos);
 						}
 					}
 					zoomByMultiplier(
