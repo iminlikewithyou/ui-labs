@@ -35,22 +35,22 @@ function CanvasControls(props: CanvasControlsProps) {
 				setMousePos(new Vector2(input.Position.X, input.Position.Y));
 			} else if (input.UserInputType === Enum.UserInputType.MouseWheel) {
 				if (ctrlClicked || shiftClicked) {
-					let cursorRelativeToDivCenter: Vector2 | undefined;
+					let cursorRelativeToAnchor: Vector2 | undefined;
 					// Ctrl-Zoom pans towards the cursor
 					if (ctrlClicked) {
 						const holder = props.PreviewEntry.Holder;
 						if (holder) {
-							const divAnchorPos = holder.AbsolutePosition.add(
+							const holderAnchorPos = holder.AbsolutePosition.add(
 								holder.AbsoluteSize.mul(holder.AnchorPoint)
 							);
 							const currentPos = mousePos.getValue();
-							cursorRelativeToDivCenter = currentPos.sub(divAnchorPos);
+							cursorRelativeToAnchor = currentPos.sub(holderAnchorPos);
 						}
 					}
 					zoomByMultiplier(
 						props.PreviewEntry.Key,
 						input.Position.Z * 1.3,
-						cursorRelativeToDivCenter
+						cursorRelativeToAnchor
 					);
 				} else {
 					// Panning with scroll feels more of a hassle than useful for a storybook explorer, so I commented it out.
