@@ -340,7 +340,7 @@ export const StoryPreviewProducer = createProducer(initialState, {
 	 * Zooms by applying a multiplier.
 	 * A positive multiplier zooms in by that multiplier. (2 applies a 2x zoom)
 	 * A negative multiplier zooms out by the multiplicative inverse of that multiplier. (-2 applies a 0.5x zoom)
-	 * Optionally, providing an offset of the cursor relative to the center of the frame will ensure that the content at that location stay in place.
+	 * Optionally, providing an offset of the cursor relative to the holder's anchor will ensure that the content at that location stays in place.
 	 */
 	zoomByMultiplier: (
 		state,
