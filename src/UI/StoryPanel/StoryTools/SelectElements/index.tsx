@@ -1,12 +1,13 @@
 import { useEventListener, useUnmountEffect } from "@rbxts/pretty-react-hooks";
 import React, { Binding, useEffect, useMemo, useState } from "@rbxts/react";
 import { useProducer, useSelector } from "@rbxts/react-reflex";
-import { RunService, Selection } from "@rbxts/services";
+import { Selection } from "@rbxts/services";
+import { setInterval } from "@rbxts/set-timeout";
 import { useToolbarHovered } from "Context/StoryPanelContext";
 import {
 	useInputBegan,
 	useInputEnded,
-	useMousePos,
+	useMousePos
 } from "Hooks/Context/UserInput";
 import { selectPluginWidget } from "Reflex/Plugin";
 import { Div } from "UI/Styles/Div";
@@ -29,7 +30,7 @@ function GetSelectedGuis(root?: Frame) {
 
 		return selections.filter(
 			(selection) =>
-				selection.IsA("GuiObject") && selection.IsDescendantOf(root),
+				selection.IsA("GuiObject") && selection.IsDescendantOf(root)
 		);
 	};
 }
@@ -41,7 +42,7 @@ function SelectElements(props: SelectElementsProps) {
 		useProducer<RootProducer>();
 	const holder = props.PreviewEntry.Holder;
 	const [selectedElements, setSelectedElements] = useState<GuiObject[]>(
-		GetSelectedGuis(holder),
+		GetSelectedGuis(holder)
 	);
 	const [passThrough, setPassThrough] = useState(false);
 	const inputBegan = useInputBegan();
@@ -109,13 +110,24 @@ function SelectElements(props: SelectElementsProps) {
 		if (toolbarHovered) return;
 		if (!holder) return;
 
-		const connection = RunService.Heartbeat.Connect(() => {
+		const stop = setInterval(() => {
 			const inside = GetGuisAtPosition(holder, mousePos.getValue());
 			setHovered(inside);
-		});
+		}, 0.1);
 
-		return () => connection.Disconnect();
+		return stop;
 	}, [props.Inside, toolbarHovered, widget, holder]);
+
+	useEffect(() => {
+		if (!holder) return;
+		// testing purposes
+		const connection = inputBegan.Connect((input) => {
+			if (input.KeyCode !== Enum.KeyCode.J) return;
+			//const inside = GetGuisAtPosition(holder, mousePos.getValue());
+			//setHovered(inside);
+		});
+		return () => connection.Disconnect();
+	}, [inputBegan, holder]);
 
 	useEffect(() => {
 		if (!props.Inside || toolbarHovered) {
