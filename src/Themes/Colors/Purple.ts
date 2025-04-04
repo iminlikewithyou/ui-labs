@@ -30,6 +30,7 @@ export const Purple: Theme = {
 	Topbar: {
 		Color: Palette.Grayed,
 		Logo: Palette.Light,
+		CanaryGear: Color3.fromRGB(186, 238, 128),
 	},
 	Search: {
 		Color: Palette.Disabled,
