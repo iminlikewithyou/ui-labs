@@ -19,18 +19,19 @@ function StringControl(props: ControlElementProps<PrimitiveControl<"String">>) {
 		(textbox: TextBox) => {
 			const text = ApplyFilters(textbox.Text, props.Control.Filters ?? []);
 			textbox.Text = text;
-		},
-		[props.Control]
-	);
-	const OnFocusLost = useCallback(
-		(textbox: TextBox) => {
-			const text = ApplyFilters(textbox.Text, props.Control.Filters ?? []);
-
-			if (text === props.Current) return;
 			props.Apply(text);
 		},
-		[props.Control, props.Apply, props.Current]
+		[props.Control, props.Apply]
 	);
+	// const OnFocusLost = useCallback(
+	// 	(textbox: TextBox) => {
+	// 		const text = ApplyFilters(textbox.Text, props.Control.Filters ?? []);
+
+	// 		if (text === props.Current) return;
+	// 		props.Apply(text);
+	// 	},
+	// 	[props.Control, props.Apply, props.Current]
+	// );
 
 	return (
 		<Div>
@@ -42,7 +43,7 @@ function StringControl(props: ControlElementProps<PrimitiveControl<"String">>) {
 					ClearTextOnFocus: false
 				}}
 				OnTextChanged={OnTextChanged}
-				OnFocusLost={OnFocusLost}
+				// OnFocusLost={OnFocusLost}
 				Reference={textRef}
 			/>
 		</Div>
