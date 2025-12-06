@@ -1,3 +1,4 @@
+import { ScriptEditorService } from "@rbxts/services";
 import type { Environment } from "./Environment";
 
 /**
@@ -62,7 +63,10 @@ export async function LoadVirtualModule(
 	module: ModuleScript,
 	environment: Environment
 ) {
-	const [virtualModule, err] = loadstring(module.Source, module.GetFullName());
+	const [virtualModule, err] = loadstring(
+		ScriptEditorService.GetEditorSource(module),
+		module.GetFullName()
+	);
 
 	if (virtualModule === undefined) {
 		throw err;
@@ -83,7 +87,7 @@ export function ResolveStringPath(root: Instance, path: string) {
 	let current: Instance = root.Parent!;
 
 	if (parts.size() === 0) error(`Invalid relative path: ${path}`, 2);
-	if (parts[0] !== "." && parts[0] !== "..") {
+	if (parts[0] !== "." && parts[0] !== ".." && parts[0] !== "@self") {
 		error(`Invalid path start: "${parts[0]}" in ${path}`, 2);
 	}
 
@@ -99,6 +103,8 @@ export function ResolveStringPath(root: Instance, path: string) {
 			current = parent;
 		} else if (part === ".") {
 			// do nothing
+		} else if (part === "@self") {
+			current = root;
 		} else {
 			const child = current.FindFirstChild(part);
 			if (child === undefined)

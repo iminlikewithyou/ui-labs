@@ -9,6 +9,7 @@
 		"watch": "rbxtsc -w",
 		"postinstall": "patch-package",
 		"build:local": "npm run build && rojo build default.project.json --plugin ui-labs.rbxm",
+		"build:rbxm": "npm run build && rojo build default.project.json --output ui-labs.rbxm",
 		"format": "prettier --write ."
 	},
 	"keywords": [],
@@ -28,7 +29,7 @@
 		"patch-package": "^8.0.0",
 		"postinstall-postinstall": "^2.1.0",
 		"roblox-ts": "^3.0.0",
-		"typescript": "4.9.4"
+		"typescript": "5.5.3"
 	},
 	"dependencies": {
 		"@rbxts/catppuccin": "^1.0.2",
@@ -48,7 +49,7 @@
 		"@rbxts/set-timeout": "^1.1.2",
 		"@rbxts/sift": "^0.0.6",
 		"@rbxts/t": "^3.1.1",
-		"@rbxts/ui-labs": "^2.3.8",
+		"@rbxts/ui-labs": "^2.4.0",
 		"@rbxts/vide": "^0.4.5"
 	}
 }

@@ -23,9 +23,9 @@ const Configs = {
 
 	Version: {
 		Mayor: 1,
-		Minor: 4,
+		Minor: 5,
 		Fix: 0,
-		CanaryCommit: "d6447f1"
+		CanaryCommit: "f2a496b"
 	},
 
 	Extensions: {
