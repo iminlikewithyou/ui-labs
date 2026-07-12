@@ -88,6 +88,10 @@ function Generic(props: MounterProps<"Generic">) {
 	);
 
 	const cleanup = useMemo(() => {
+		//the environment died before this mounter rendered (a reload landed while
+		//it was being scheduled), the unmount signal already fired, so mounting
+		//now would create a story nothing ever unmounts
+		if (props.Environment.IsDestroyed()) return undefined;
 		const storyProps: InferGenericProps<ConvertedControls> = GetProps({
 			controls: controlValues as InferControls<ConvertedControls>,
 			converted: controls,

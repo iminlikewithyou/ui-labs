@@ -60,6 +60,10 @@ function FusionLib(props: MounterProps<"FusionLib">) {
 	}, [controlValues]);
 
 	const cleanup = useMemo(() => {
+		//the environment died before this mounter rendered (a reload landed while
+		//it was being scheduled), the unmount signal already fired, so mounting
+		//now would create a story nothing ever unmounts
+		if (props.Environment.IsDestroyed()) return undefined;
 		if (props.Result.scoped !== undefined) {
 			if (version === "Fusion2") {
 				warn(

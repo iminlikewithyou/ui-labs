@@ -39,6 +39,12 @@ function IrisLib(props: MounterProps<"IrisLib">) {
 	const GetProps = useStoryPassedProps(props);
 
 	const [irisStates, SetupCleanup, StoryCleanup] = useMemo(() => {
+		//the environment died before this mounter rendered (a reload landed while
+		//it was being scheduled), the unmount signal already fired, so mounting
+		//now would create a story nothing ever unmounts
+		if (props.Environment.IsDestroyed()) {
+			return [undefined, undefined, undefined] as const;
+		}
 		const setupCleanup = SetupIris(result.iris, props.MountFrame, uisMock);
 		result.iris.Init(props.MountFrame);
 
@@ -54,14 +60,18 @@ function IrisLib(props: MounterProps<"IrisLib">) {
 				UILabsWarn(WARNINGS.StoryError.format(IRIS_ERR), err);
 			}
 		});
-		return [states, setupCleanup, cleanup];
+		return [states, setupCleanup, cleanup] as const;
 	}, []);
 
 	useUpdateEffect(() => {
+		if (irisStates === undefined) return;
 		UpdateIrisStates(irisStates, controls, controlValues);
 	}, [controlValues]);
 
 	useStoryUnmount(result, props.UnmountSignal, () => {
+		//SetupCleanup is only undefined when the mount was skipped, and then the
+		//unmount signal never reaches this handler, this is just for type safety
+		if (SetupCleanup === undefined) return;
 		if (StoryCleanup) {
 			FastSpawn(() => {
 				const [success, err] = pcall(StoryCleanup);

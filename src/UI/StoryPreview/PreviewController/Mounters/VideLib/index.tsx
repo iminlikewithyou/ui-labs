@@ -34,18 +34,26 @@ function VideLib(props: MounterProps<"VideLib">) {
 	const GetProps = useStoryPassedProps(props);
 
 	const [sources, sourcesCleanup] = useMemo(() => {
+		//the environment died before this mounter rendered (a reload landed while
+		//it was being scheduled), the unmount signal already fired, so mounting
+		//now would create a story nothing ever unmounts
+		if (props.Environment.IsDestroyed()) {
+			return [undefined, undefined] as const;
+		}
 		let gotSources: InferVideControls<ConvertedControls> = {};
 		const cleanup = vide.mount(() => {
 			gotSources = CreateVideScopes(vide, controls, controlValues);
 		});
-		return [gotSources, cleanup];
+		return [gotSources, cleanup] as const;
 	}, []);
 
 	useUpdateEffect(() => {
+		if (sources === undefined) return;
 		UpdateVideScopes(sources, controls, controlValues);
 	}, [controlValues]);
 
 	const cleanup = useMemo(() => {
+		if (sources === undefined) return undefined;
 		const videProps: InferVideProps<ConvertedControls> = GetProps({
 			controls: sources
 		});
@@ -62,6 +70,9 @@ function VideLib(props: MounterProps<"VideLib">) {
 	}, []);
 
 	useStoryUnmount(result, props.UnmountSignal, () => {
+		//cleanup is only undefined when the mount was skipped, and then the
+		//unmount signal never reaches this handler, this is just for type safety
+		if (cleanup === undefined || sourcesCleanup === undefined) return;
 		vide.step(0); // disconnect spring connection;
 		FastSpawn(() => {
 			const [success, err] = pcall(cleanup);

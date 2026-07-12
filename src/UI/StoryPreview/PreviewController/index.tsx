@@ -51,7 +51,7 @@ function PreviewController(props: PreviewControllerProps) {
 	const studioMode = useSelector(selectStudioMode);
 
 	const [canReload, setCanReload] = useState(false);
-	const [result, reloader] = useStoryRequire(
+	const [required, reloader] = useStoryRequire(
 		props.PreviewEntry,
 		studioMode,
 		canReload
@@ -93,13 +93,23 @@ function PreviewController(props: PreviewControllerProps) {
 	}, [entry.Visible]);
 
 	// Running story
-	useEffect(() => {}, [result]);
+	useEffect(() => {}, [required]);
 
 	// Creating story
 	useEffect(() => {
-		if (result === undefined) return;
+		if (required === undefined) return;
+		if (required.Result === undefined) return;
 		if (reloader === undefined) return;
-		const check = CheckStory(result);
+
+		//the environment that produced this result, NOT the reloader's current one:
+		//a newer reload may have started already, and hooking its environment would
+		//tie this story's unmount to the wrong generation
+		const environment = required.Environment;
+		//a reload landed while this result was in flight, mounting now would create
+		//a story nothing ever unmounts, the newer reload's result mounts instead
+		if (environment.IsDestroyed()) return;
+
+		const check = CheckStory(required.Result);
 		if (!check.Sucess) return UILabsWarn(WARNINGS.StoryTypeError, check.Error);
 
 		mountFrame.Name = RemoveExtension(
@@ -118,12 +128,23 @@ function PreviewController(props: PreviewControllerProps) {
 			}
 		}
 
+		//hooked before the renderer exists so no mounter can ever observe a
+		//destroyed environment whose unmount signal has not fired yet.
+		//the signal is deliberately not Destroyed after firing: a mounter that
+		//renders late still subscribes to it, and once fired it holds nothing and
+		//is collected together with the renderer
+		environment.HookOnDestroyed(() => {
+			unmountSignal.Fire();
+			mountFrame.ClearAllChildren();
+		});
+
 		const gotRenderer = MountStory(
 			check.Type,
 			props.PreviewEntry,
 			check.Result,
 			mountFrame,
 			listenerFrame,
+			environment,
 			unmountSignal,
 			recoverControlsData,
 			setRecoverControlsData
@@ -133,18 +154,7 @@ function PreviewController(props: PreviewControllerProps) {
 			MountType: check.Type,
 			Renderer: gotRenderer
 		});
-
-		const environment = reloader.GetEnvironment();
-
-		if (environment) {
-			environment.HookOnDestroyed(() => {
-				unmountSignal.Fire();
-				unmountSignal.Destroy();
-
-				mountFrame.ClearAllChildren();
-			});
-		}
-	}, [result, reloader]);
+	}, [required, reloader]);
 
 	const renderMap: ReactChildren = new Map();
 	if (renderer) renderMap.set(renderer.Key, renderer.Renderer);
