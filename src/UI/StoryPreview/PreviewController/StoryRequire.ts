@@ -15,6 +15,18 @@ import { HotReloader } from "Utils/HotReloader/HotReloader";
 import { CreateTuple } from "Utils/MiscUtils";
 import { CreateEntrySnapshot, ReloadEntry } from "../Utils";
 
+/** A require result paired with the environment that produced it, so consumers can
+ *  never mix a stale result with a newer reload's environment. */
+export interface RequiredStory {
+	Result: unknown;
+	Environment: Environment;
+}
+
+interface PendingRequire {
+	Promise: Promise<unknown>;
+	Environment: Environment;
+}
+
 export function useStoryRequire(
 	entry: PreviewEntry,
 	studioMode: boolean,
@@ -24,7 +36,7 @@ export function useStoryRequire(
 	const node = useSelector(selectNodeFromModule(entry.Module));
 	const [reloader, setReloader] = useState<HotReloader>();
 	const [reloadQuery, setReloadQuery] = useState(false);
-	const [resultPromise, setResultPromise] = useState<Promise<unknown>>();
+	const [resultPromise, setResultPromise] = useState<PendingRequire>();
 	const { unmountByUID, updateMountData } = useProducer<RootProducer>();
 	const widget = useSelector(selectPluginWidget);
 	const inputs = useGetInputSignalsFromFrame(entry.ListenerFrame);
@@ -96,7 +108,11 @@ export function useStoryRequire(
 			}, 2);
 		}, 2);
 
-		setResultPromise(reloader.Reload());
+		const promise = reloader.Reload();
+		const environment = reloader.GetEnvironment();
+		if (environment) {
+			setResultPromise({ Promise: promise, Environment: environment });
+		}
 		setReloader(reloader);
 
 		return () => {
@@ -111,7 +127,12 @@ export function useStoryRequire(
 		reloader.AutoReload = !studioMode && entry.AutoReload;
 
 		const changed = reloader.OnReloadStarted.Connect((promise) => {
-			setResultPromise(promise);
+			//OnReloadStarted fires synchronously inside Reload, so the reloader's
+			//current environment is the one this promise belongs to
+			const environment = reloader.GetEnvironment();
+			if (environment) {
+				setResultPromise({ Promise: promise, Environment: environment });
+			}
 		});
 		if (studioMode && entry.AutoReload) {
 			const onReloadQuery = reloader.OnDependencyChanged.Connect(() => {
@@ -139,17 +160,24 @@ export function useStoryRequire(
 	}, [reloader, reloadQuery, canReload, studioMode]);
 
 	//Resolving promises
-	const [result] = useAsync(() => {
+	const [required] = useAsync<RequiredStory | undefined>(() => {
 		if (!resultPromise) return Promise.resolve(undefined);
 
-		return resultPromise.catch((err) => {
+		return resultPromise.Promise.andThen(
+			(result) =>
+				({
+					Result: result,
+					Environment: resultPromise.Environment
+				}) as RequiredStory | undefined
+		).catch((err) => {
 			if (Promise.Error.is(err)) {
 				warn("Story errored while required: \n\n" + err.trace);
 			} else {
 				warn("Story errored while required: \n\n" + tostring(err));
 			}
+			return undefined;
 		});
 	}, [resultPromise]);
 
-	return CreateTuple(result, reloader);
+	return CreateTuple(required, reloader);
 }

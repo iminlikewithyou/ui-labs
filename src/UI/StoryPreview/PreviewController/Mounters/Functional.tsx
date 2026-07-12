@@ -7,8 +7,14 @@ const FUNCTIONAL_ERR = WARNING_STORY_TYPES.Functional;
 
 function Functional(props: MounterProps<"Functional">) {
 	const unmounter = useRef<() => void>();
+	const mounted = useRef(false);
 
 	useEffect(() => {
+		//a reload can destroy the environment between this mounter rendering and
+		//this effect running, the unmount signal already fired, so mounting now
+		//would create a story nothing ever unmounts
+		if (props.Environment.IsDestroyed()) return;
+		mounted.current = true;
 		unmounter.current = YCall(
 			props.Result,
 			props.MountFrame,
@@ -31,7 +37,10 @@ function Functional(props: MounterProps<"Functional">) {
 					UILabsWarn(WARNINGS.CleanupError, err);
 				}
 			});
-		} else {
+		} else if (mounted.current) {
+			//only warn when the story actually ran without returning a cleanup;
+			//when the environment died before the mount effect ran, nothing was
+			//mounted on purpose and there is rightfully nothing to clean up
 			UILabsWarn(WARNINGS.NoCleanup);
 		}
 	});

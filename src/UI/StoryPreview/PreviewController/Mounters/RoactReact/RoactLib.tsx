@@ -47,6 +47,10 @@ function RoactLib(props: MounterProps<"RoactLib">) {
 	}, [controlValues, props.Result]);
 
 	const handle = useMemo(() => {
+		//the environment died before this mounter rendered (a reload landed while
+		//it was being scheduled), the unmount signal already fired, so mounting
+		//now would create a story nothing ever unmounts
+		if (props.Environment.IsDestroyed()) return undefined;
 		const component = RenderComponent();
 
 		if (component) {
@@ -55,6 +59,8 @@ function RoactLib(props: MounterProps<"RoactLib">) {
 	}, []);
 
 	useUpdateEffect(() => {
+		//never update a tree that the unmount signal already unmounted
+		if (props.Environment.IsDestroyed()) return;
 		const component = RenderComponent();
 		if (component && handle) {
 			result.roact.update(handle, component);

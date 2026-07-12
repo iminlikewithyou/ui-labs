@@ -72,12 +72,18 @@ function ReactLib(props: MounterProps<"ReactLib">) {
 	}, []);
 
 	useEffect(() => {
+		//a reload can destroy the environment between this mounter rendering and
+		//this effect running, the unmount signal already fired, so mounting now
+		//would create a story nothing ever unmounts
+		if (props.Environment.IsDestroyed()) return;
 		const component = RenderComponent();
 		if (root !== undefined) {
 			root.render(component);
 		}
 	}, []);
 	useUpdateEffect(() => {
+		//never render into a root that the unmount signal already unmounted
+		if (props.Environment.IsDestroyed()) return;
 		const component = RenderComponent();
 		if (root !== undefined) {
 			root.render(component);

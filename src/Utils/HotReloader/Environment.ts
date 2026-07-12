@@ -9,6 +9,7 @@ type Listeners = Map<ModuleScript, RBXScriptConnection>;
 
 export class Environment {
 	private _ActiveConnections = true;
+	private _Destroyed = false;
 	private _Dependencies: Dependencies = new Map();
 	private _DependencyLoaders: DependencyLoaders = new Map();
 	private _Listeners: Listeners = new Map();
@@ -84,12 +85,25 @@ export class Environment {
 		return promise as Promise<T>;
 	}
 
+	IsDestroyed() {
+		return this._Destroyed;
+	}
+
 	HookOnDestroyed(callback: () => void, order: number = 0) {
+		//a hook registered after destruction would never run, breaking the
+		//registrant's teardown, so run it right away instead
+		if (this._Destroyed) {
+			callback();
+			return;
+		}
 		this._DestroyHooks.push({ Order: order, Callback: callback });
 		this._DestroyHooks.sort((a, b) => a.Order < b.Order);
 	}
 
 	Destroy() {
+		if (this._Destroyed) return;
+		this._Destroyed = true;
+
 		for (const hook of this._DestroyHooks) {
 			hook.Callback();
 		}
